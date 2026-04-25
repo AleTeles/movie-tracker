@@ -1,0 +1,65 @@
+.header {
+  background-color: #000;
+  border-bottom: 1px solid #333;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.menu {
+  display: flex;
+  gap: 25px;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #aaa;
+  font-size: 14px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* hover */
+.menu a:hover {
+  color: #fff;
+}
+
+/* ativo */
+.menu a.active {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* linha embaixo (efeito Netflix) */
+.menu a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 2px;
+  background-color: #e50914;
+  transition: width 0.3s ease;
+}
+
+/* hover mostra linha */
+.menu a:hover::after {
+  width: 100%;
+}
+
+/* ativo mantém linha */
+.menu a.active::after {
+  width: 100%;
+}
