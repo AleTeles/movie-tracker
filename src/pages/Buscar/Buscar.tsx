@@ -11,6 +11,7 @@ import MovieModal from "../../components/MovieModal/MovieModal"
 type Movie = {
   id: number
   title: string
+  original_title: string
   poster_path: string
   release_date: string
   overview: string
@@ -96,6 +97,16 @@ function Buscar() {
           placeholder="Digite o nome do filme..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+
+          /**
+           * Evento de tecla:
+           * Se pressionar ENTER → executa a busca
+           */
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch()
+            }
+          }}
         />
 
         <button className="buscar-button" onClick={handleSearch}>

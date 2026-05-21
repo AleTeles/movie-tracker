@@ -1,24 +1,29 @@
-// *** MovieModal.tsx *** //
+// ==========================================================
+// MovieModal.tsx 
+// ==========================================================
+// OBS: (FIX: abrir ReviewForm)
 
 import { useEffect, useState } from "react"
-import { getMovieCredits } from "../../services/tmdb"
+import { getMovieCredits, getMovieDetails } from "../../services/tmdb"
+import { supabase } from "../../services/supabase"
 import "./MovieModal.css"
 
-/**
- * Tipo de filme
- */
+import { FaHeart, FaRegHeart, FaCheck, FaRegCircle } from "react-icons/fa"
+import MovieDescription from "../Movie/MovieDescription"
+import ReviewForm from "../Review/ReviewForm"
+
+const USER_ID = "11111111-1111-1111-1111-111111111111"
+
 type Movie = {
   id: number
   title: string
+  original_title: string
   poster_path: string
   release_date: string
   overview: string
   vote_average: number
 }
 
-/**
- * Tipo do ator (elenco)
- */
 type Cast = {
   id: number
   name: string
@@ -26,9 +31,11 @@ type Cast = {
   profile_path: string | null
 }
 
-/**
- * Props do modal
- */
+type Genre = {
+  id: number
+  name: string
+}
+
 type Props = {
   isOpen: boolean
   movie: Movie | null
@@ -36,117 +43,276 @@ type Props = {
 }
 
 function MovieModal({ isOpen, movie, onClose }: Props) {
-  /**
-   * Estado do elenco
-   */
-  const [cast, setCast] = useState<Cast[]>([])
 
-  /**
-   * Busca elenco ao abrir modal
-   */
+  const [cast, setCast] = useState<Cast[]>([])
+  const [genres, setGenres] = useState<Genre[]>([])
+
+  const [userStatus, setUserStatus] = useState({
+    watched: false,
+    want_to_watch: false
+  })
+
+  const [mode, setMode] = useState<"normal" | "review">("normal")
+
+  // =========================
+  // BUSCAR DADOS
+  // =========================
   useEffect(() => {
     if (!movie) return
 
-    async function fetchCast() {
-      try {
-        /**
-         * Busca dados da API
-         */
-        const data = await getMovieCredits(movie!.id)
+    const currentMovie = movie
 
-        /**
-         * Validação de segurança:
-         * garante que é um array antes de usar
-         */
-        if (Array.isArray(data)) {
-          setCast(data.slice(0, 5))
-        } else {
-          console.warn("Elenco inválido:", data)
-          setCast([])
-        }
-      } catch (error) {
-        console.error("Erro ao buscar elenco:", error)
-        setCast([])
+    async function fetchData() {
+      const castData = await getMovieCredits(currentMovie.id)
+      if (Array.isArray(castData)) {
+        setCast(castData.slice(0, 10))
+      }
+
+      const details = await getMovieDetails(currentMovie.id)
+      if (details?.genres) {
+        setGenres(details.genres)
       }
     }
 
-    fetchCast()
+    fetchData()
   }, [movie])
 
-  /**
-   * Não renderiza se fechado
-   */
+  // =========================
+  // STATUS
+  // =========================
+  useEffect(() => {
+    if (!movie || !isOpen) return
+
+    const currentMovie = movie
+
+    async function fetchStatus() {
+      const { data } = await supabase.rpc("get_user_movie_status", {
+        p_user_id: USER_ID,
+        p_tmdb_movie_id: currentMovie.id
+      })
+
+      if (data && data.length > 0) {
+        setUserStatus({
+          watched: data[0].watched,
+          want_to_watch: data[0].want_to_watch
+        })
+      } else {
+        setUserStatus({
+          watched: false,
+          want_to_watch: false
+        })
+      }
+    }
+
+    fetchStatus()
+  }, [movie, isOpen])
+
+  // =========================
+  // QUERO ASSISTIR
+  // =========================
+  async function handleWantToWatch() {
+    if (!movie) return
+
+  const newValue = !userStatus.want_to_watch
+
+  const { data, error } = await supabase.rpc("set_desejo_assistir", {
+    p_user_app_id: USER_ID,
+    p_want_to_watch: newValue,
+
+    p_tmdb_movie_id: movie.id,
+    p_title: movie.title,
+    p_original_title: movie.original_title,
+    p_release_date: movie.release_date,
+    p_tmdb_rating_average: movie.vote_average,
+    p_tmdb_poster_path: movie.poster_path,
+    p_genres: genres
+
+  })
+  // ========================================
+  // ERRO TÉCNICO
+  // ========================================
+  if (error) {
+    alert(error.message)
+    return
+  }
+  // ========================================
+  // ERRO DA FUNÇÃO
+  // ========================================
+  if (!data?.Success) {
+    alert(data?.MessageReturn || "Erro ao atualizar")
+    return
+  }
+  // ========================================
+  // SUCESSO
+  // ========================================
+  setUserStatus({
+    watched: userStatus.watched,
+    want_to_watch: newValue
+  })
+  }
+
+  function handleWatchedClick() {
+    setMode("review")
+  }
+
+  // ==========================================================
+  // FUNÇÃO: handleSaveReview
+  // ==========================================================
+  // RESPONSABILIDADE:
+  // ----------------------------------------------------------
+  // ✔ Receber os dados do formulário (ReviewForm)
+  // ✔ Enviar para o banco (Supabase RPC)
+  // ✔ Tratar erro
+  // ✔ Atualizar status na tela
+  // ✔ Fechar o formulário
+  // ==========================================================
+  async function handleSaveReview(data: {
+    rating: number
+    reviewText: string
+    watchedDate: string
+  }) {
+    
+    // 🔒 Segurança: garante que existe um filme selecionado
+    if (!movie) return
+
+    // ==========================================================
+    // 🔥 CHAMADA AO BANCO (RPC)
+    // ==========================================================
+    // Essa função no banco deve:
+    // - verificar se o filme existe
+    // - criar se não existir
+    // - remover "quero assistir" (se estiver marcado)
+    // - marcar como assistido
+    // - criar a avaliação
+
+    const { data: result, error } = await supabase.rpc("create_movie_review", {
+      p_users_app_id: USER_ID,
+      p_tmdb_movie_id: movie.id,
+
+      p_title: movie.title,
+      p_original_title: movie.title,
+      p_release_date: movie.release_date,
+      p_tmdb_rating_average: movie.vote_average,
+      p_tmdb_poster_path: movie.poster_path,
+      p_genres: genres,
+
+      p_rating: data.rating,
+      p_review_text: data.reviewText,
+      p_watched_date: data.watchedDate
+    })
+
+    // ==========================================================
+    // ❌ ERRO TÉCNICO (ex: falha na chamada)
+    // ==========================================================
+// ========================================
+// ERRO TÉCNICO
+// ========================================
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    // ========================================
+    // ERRO DA FUNÇÃO
+    // ========================================
+    if (!result?.[0]?.success) {
+      alert(result?.[0]?.message || "Erro ao salvar avaliação")
+      return
+    }
+
+    // ========================================
+    // MENSAGEM DO BANCO
+    // ========================================
+    if (result?.[0]?.message) {
+      alert(result[0].message)
+    }
+
+  // ==========================================================
+  // ✅ SUCESSO
+  // ==========================================================
+  // Atualiza o estado da tela manualmente
+  // (não precisa buscar no banco novamente)
+
+    setUserStatus({
+      watched: true,
+      want_to_watch: false
+    })
+
+  // Fecha o formulário e volta para o modo normal
+    setMode("normal")
+  }
+
   if (!isOpen || !movie) return null
-
-  /**
-   * Imagem do filme
-   */
-  const imageUrl = movie.poster_path
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : "https://via.placeholder.com/500x750?text=Sem+Imagem"
-
-  /**
-   * Ano
-   */
-  const year = movie.release_date
-    ? movie.release_date.substring(0, 4)
-    : "----"
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button className="modal-close" onClick={onClose}>
-          ✖
-        </button>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
-        <div className="modal-body">
-          <img
-            src={imageUrl}
-            alt={movie.title}
-            className="modal-image"
-          />
+        <button className="modal-close" onClick={onClose}>✖</button>
 
-          <div className="modal-info">
-            <h2>{movie.title}</h2>
+        <h2>{movie.title}</h2>
 
-            <p className="modal-meta">
-              {year} ⭐ {movie.vote_average?.toFixed(1)}
-            </p>
+        <p className="modal-genres">
+          {genres.map(g => g.name).join(" • ")}
+        </p>
 
-            <p className="modal-description">
-              {movie.overview || "Sem descrição disponível"}
-            </p>
+        <p className="modal-meta">
+          {movie.release_date?.substring(0, 4)} ⭐ {movie.vote_average?.toFixed(1)}
+        </p>
 
-            {/* ================= ELENCO ================= */}
-            <h3>Elenco</h3>
+        {/* ================= AÇÕES ================= */}
+        <div className="modal-actions">
 
-            <div className="cast-list">
-              {cast.length === 0 && (
-                <p style={{ color: "#aaa" }}>
-                  Carregando elenco...
-                </p>
-              )}
-
-              {cast.map((actor) => {
-                const actorImage = actor.profile_path
-                  ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
-                  : "https://via.placeholder.com/100x150?text=Sem+Foto"
-
-                return (
-                  <div key={actor.id} className="cast-card">
-                    <img src={actorImage} alt={actor.name} />
-                    <p>{actor.name}</p>
-                    <small>{actor.character}</small>
-                  </div>
-                )
-              })}
-            </div>
-            {/* ========================================== */}
+          <div
+            className={`modal-action-btn ${userStatus.want_to_watch ? "active" : ""}`}
+            onClick={handleWantToWatch}
+          >
+            {userStatus.want_to_watch ? <FaHeart /> : <FaRegHeart />}
+            <span>Quero assistir</span>
           </div>
+
+          <div
+            className={`modal-action-btn ${userStatus.watched ? "active" : ""}`}
+            onClick={handleWatchedClick}
+          >
+            {userStatus.watched ? <FaCheck /> : <FaRegCircle />}
+            <span>Já assisti</span>
+          </div>
+
         </div>
+
+        <div className="modal-divider" />
+
+        {/* ================= MODO ================= */}
+        {mode === "review" ? (
+          <ReviewForm
+          // 🔥 Quando o usuário clicar em "Salvar":
+          // o ReviewForm envia os dados preenchidos (rating, reviewText, watchedDate)
+          // para essa função handleSaveReview que criamos.
+          // Essa função é responsável por:
+          // 1. salvar no banco
+          // 2. tratar erro
+          // 3. atualizar status (Já assisti / Quero assistir)
+          // 4. fechar o formulário
+            onSave={handleSaveReview}
+            onCancel={() => setMode("normal")} // cancelar continua fechando
+          />
+        ) : (
+          <>
+            <MovieDescription description={movie.overview} />
+
+            <h3>Elenco</h3>
+            <div className="cast-list">
+              {cast.map(actor => (
+                <div key={actor.id}>
+                  <p>{actor.name}</p>
+                  <small>{actor.character}</small>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
       </div>
     </div>
   )

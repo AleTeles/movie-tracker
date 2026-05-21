@@ -1,4 +1,6 @@
-// *** tmdb.ts *** //
+// ==========================================================
+// tmdb.ts
+// ==========================================================
 
 /**
  * Chave da API (centralizada aqui)
@@ -12,6 +14,10 @@ const API_KEY = "b0111a83c0d38d967f8a1b496996af0a"
 const BASE_URL = "https://api.themoviedb.org/3"
 
 /**
+ * ==========================================================
+ * FUNÇÃO: searchMovies
+ * ==========================================================
+ *
  * Busca filmes pelo nome
  */
 export async function searchMovies(query: string) {
@@ -25,8 +31,11 @@ export async function searchMovies(query: string) {
 }
 
 /**
- * 🔥 NOVO: Busca elenco do filme
- * Recebe o ID do filme
+ * ==========================================================
+ * FUNÇÃO: getMovieCredits
+ * ==========================================================
+ *
+ * Busca elenco do filme
  */
 export async function getMovieCredits(movieId: number) {
   const response = await fetch(
@@ -35,8 +44,48 @@ export async function getMovieCredits(movieId: number) {
 
   const data = await response.json()
 
-  /**
-   * Retorna apenas o elenco
-   */
   return data.cast
+}
+
+/**
+ * ==========================================================
+ * 🔥 NOVA FUNÇÃO: getMovieDetails
+ * ==========================================================
+ *
+ * OBJETIVO:
+ * ----------
+ * Buscar detalhes completos do filme no TMDB
+ *
+ * RETORNA:
+ * ----------
+ * - título
+ * - descrição
+ * - avaliação
+ * - 🔥 gêneros (IMPORTANTE)
+ *
+ * EXEMPLO DE RETORNO:
+ * ----------
+ * genres: [
+ *   { id: 28, name: "Ação" },
+ *   { id: 878, name: "Ficção científica" }
+ * ]
+ */
+export async function getMovieDetails(movieId: number) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=pt-BR`
+    )
+
+    if (!response.ok) {
+      throw new Error("Erro ao buscar detalhes do filme")
+    }
+
+    const data = await response.json()
+
+    return data
+
+  } catch (error) {
+    console.error("Erro em getMovieDetails:", error)
+    return null
+  }
 }

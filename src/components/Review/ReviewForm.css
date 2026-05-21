@@ -1,0 +1,108 @@
+/* ==========================================================
+   ReviewForm.css (UX MELHORADO)
+========================================================== */
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 15px;
+}
+
+/* grupos */
+.review-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* data menor */
+.review-date-input {
+  width: 140px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #111;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+
+/* foco (quando clica) */
+.review-date-input:focus {
+  border-color: #2ecc71;
+}
+
+/* label */
+.review-label {
+  font-size: 14px;
+  color: #ccc;
+}
+
+/* estrelas */
+.review-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-star {
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  transition: 0.2s;
+}
+
+.review-star.active {
+  color: gold;
+}
+
+/* textarea */
+.review-textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #111;
+  color: #fff;
+
+  /* 🔥 evita cortar layout */
+  box-sizing: border-box;
+}
+
+/* separador */
+.review-divider {
+  border-top: 1px solid #333;
+  margin: 10px 0;
+}
+
+/* botões */
+.review-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.review-button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.review-button.save {
+  background-color: #2ecc71;
+  color: #000;
+}
+
+.review-button.cancel {
+  background-color: #555;
+  color: #fff;
+}
+
+.review-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
