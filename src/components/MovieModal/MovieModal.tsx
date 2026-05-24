@@ -1,18 +1,17 @@
 // ==========================================================
 // MovieModal.tsx 
 // ==========================================================
-// OBS: (FIX: abrir ReviewForm)
+// OBS: (FIX: abrir RatingForm)
 
 import { useEffect, useState } from "react"
 import { getMovieCredits, getMovieDetails } from "../../services/tmdb"
 import { supabase } from "../../services/supabase"
+import { getCurrentUsersAppId } from "../../services/auth"
 import "./MovieModal.css"
 
-import { FaHeart, FaRegHeart, FaCheck, FaRegCircle } from "react-icons/fa"
 import MovieDescription from "../Movie/MovieDescription"
-import ReviewForm from "../Review/ReviewForm"
-
-const USER_ID = "11111111-1111-1111-1111-111111111111"
+import MovieHeader from "../Movie/MovieHeader"
+import RatingForm from "../Rating/RatingForm"
 
 type Movie = {
   id: number
@@ -53,6 +52,7 @@ function MovieModal({ isOpen, movie, onClose }: Props) {
   })
 
   const [mode, setMode] = useState<"normal" | "review">("normal")
+  const usersAppId = getCurrentUsersAppId()
 
   // =========================
   // BUSCAR DADOS
@@ -87,7 +87,7 @@ function MovieModal({ isOpen, movie, onClose }: Props) {
 
     async function fetchStatus() {
       const { data } = await supabase.rpc("get_user_movie_status", {
-        p_user_id: USER_ID,
+        p_user_id: usersAppId,
         p_tmdb_movie_id: currentMovie.id
       })
 
@@ -116,7 +116,7 @@ function MovieModal({ isOpen, movie, onClose }: Props) {
   const newValue = !userStatus.want_to_watch
 
   const { data, error } = await supabase.rpc("set_desejo_assistir", {
-    p_user_app_id: USER_ID,
+    p_user_app_id: usersAppId,
     p_want_to_watch: newValue,
 
     p_tmdb_movie_id: movie.id,
@@ -160,7 +160,7 @@ function MovieModal({ isOpen, movie, onClose }: Props) {
   // ==========================================================
   // RESPONSABILIDADE:
   // ----------------------------------------------------------
-  // ✔ Receber os dados do formulário (ReviewForm)
+  // ✔ Receber os dados do formulário (RatingForm)
   // ✔ Enviar para o banco (Supabase RPC)
   // ✔ Tratar erro
   // ✔ Atualizar status na tela
@@ -186,7 +186,7 @@ function MovieModal({ isOpen, movie, onClose }: Props) {
     // - criar a avaliação
 
     const { data: result, error } = await supabase.rpc("create_movie_review", {
-      p_users_app_id: USER_ID,
+      p_users_app_id: usersAppId,
       p_tmdb_movie_id: movie.id,
 
       p_title: movie.title,
@@ -250,44 +250,24 @@ function MovieModal({ isOpen, movie, onClose }: Props) {
 
         <button className="modal-close" onClick={onClose}>✖</button>
 
-        <h2>{movie.title}</h2>
+        <MovieHeader
+          movie={movie}
+          genres={genres}
 
-        <p className="modal-genres">
-          {genres.map(g => g.name).join(" • ")}
-        </p>
+          watched={userStatus.watched}
+          wantToWatch={userStatus.want_to_watch}
 
-        <p className="modal-meta">
-          {movie.release_date?.substring(0, 4)} ⭐ {movie.vote_average?.toFixed(1)}
-        </p>
-
-        {/* ================= AÇÕES ================= */}
-        <div className="modal-actions">
-
-          <div
-            className={`modal-action-btn ${userStatus.want_to_watch ? "active" : ""}`}
-            onClick={handleWantToWatch}
-          >
-            {userStatus.want_to_watch ? <FaHeart /> : <FaRegHeart />}
-            <span>Quero assistir</span>
-          </div>
-
-          <div
-            className={`modal-action-btn ${userStatus.watched ? "active" : ""}`}
-            onClick={handleWatchedClick}
-          >
-            {userStatus.watched ? <FaCheck /> : <FaRegCircle />}
-            <span>Já assisti</span>
-          </div>
-
-        </div>
+          onWantToWatch={handleWantToWatch}
+          onWatched={handleWatchedClick}
+        />
 
         <div className="modal-divider" />
 
         {/* ================= MODO ================= */}
         {mode === "review" ? (
-          <ReviewForm
+          <RatingForm
           // 🔥 Quando o usuário clicar em "Salvar":
-          // o ReviewForm envia os dados preenchidos (rating, reviewText, watchedDate)
+          // o RatingForm envia os dados preenchidos (rating, reviewText, watchedDate)
           // para essa função handleSaveReview que criamos.
           // Essa função é responsável por:
           // 1. salvar no banco

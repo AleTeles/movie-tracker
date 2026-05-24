@@ -4,6 +4,7 @@ import { useState } from "react"
 import { searchMovies } from "../../services/tmdb"
 import "./Buscar.css"
 import MovieModal from "../../components/MovieModal/MovieModal"
+import noPoster from "../../assets/no-poster.png"
 
 /**
  * Tipo de filme retornado pela API
@@ -119,7 +120,7 @@ function Buscar() {
         {movies.map((movie) => {
           const imageUrl = movie.poster_path
             ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-            : "https://via.placeholder.com/300x450?text=Sem+Imagem"
+            : noPoster
 
           const year = movie.release_date
             ? movie.release_date.substring(0, 4)

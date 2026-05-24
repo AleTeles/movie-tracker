@@ -1,9 +1,9 @@
 // ==========================================================
-// ReviewForm.tsx (UX AJUSTADO)
+// RatingForm.tsx (UX AJUSTADO)
 // ==========================================================
 
 import { useState, useEffect } from "react"
-import "./ReviewForm.css"
+import "./RatingForm.css"
 
 type Props = {
   onSave: (data: {
@@ -14,7 +14,7 @@ type Props = {
   onCancel?: () => void
 }
 
-function ReviewForm({ onSave, onCancel }: Props) {
+function RatingForm({ onSave, onCancel }: Props) {
 
   const [watchedDate, setWatchedDate] = useState("")
   const [rating, setRating] = useState<number | null>(null)
@@ -121,4 +121,4 @@ function ReviewForm({ onSave, onCancel }: Props) {
   )
 }
 
-export default ReviewForm
+export default RatingForm

@@ -1,0 +1,140 @@
+/* ==========================================================
+   MovieHeader.css
+==========================================================
+   Estrutura principal do cabeçalho do modal.
+
+   Dividido em 3 partes:
+   1 - Poster
+   2 - Informações do filme
+   3 - Histórico de avaliações
+========================================================== */
+.movie-header {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 20px 0 5px;
+}
+
+/* ==========================================================
+   POSTER
+==========================================================
+   Poster pequeno do filme.
+========================================================== */
+
+.movie-header-poster img {
+  width: 140px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================
+   INFOS DO FILME
+==========================================================
+   Área central:
+   - título
+   - gêneros
+   - nota
+   - botões
+========================================================== */
+
+.movie-header-info {
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ==========================================================
+   TÍTULO
+========================================================== */
+
+.movie-header-info h2 {
+  margin-bottom: 8px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+/* ==========================================================
+   GÊNEROS
+========================================================== */
+
+.modal-genres {
+  margin-bottom: 8px;
+  color: #bbb;
+  font-size: 14px;
+}
+
+/* ==========================================================
+   META INFORMAÇÕES
+==========================================================
+   Exemplo:
+   - ano
+   - nota TMDB
+========================================================== */
+
+.modal-meta {
+  margin-bottom: 18px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* ==========================================================
+   AÇÕES
+==========================================================
+   Botões:
+   - Quero assistir
+   - Já assisti
+========================================================== */
+
+.modal-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================
+   HISTÓRICO
+==========================================================
+   Área lateral do histórico.
+========================================================== */
+
+.movie-header-history {
+  width: 260px;
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.movie-header-history-button {
+  min-width: 280px;
+}
+
+/* ==========================================================
+   RESPONSIVO
+==========================================================
+   Em telas menores:
+   - layout vira coluna
+   - poster reduz tamanho
+   - histórico ocupa largura total
+========================================================== */
+
+@media (max-width: 900px) {
+
+  .movie-header {
+    flex-direction: column;
+  }
+
+  .movie-header-history {
+    width: 100%;
+  }
+
+  .movie-header-poster img {
+    width: 120px;
+  }
+
+}

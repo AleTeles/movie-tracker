@@ -1,0 +1,68 @@
+/* ==========================================================
+   buttons.css
+==========================================================
+   Botões padrão utilizados no sistema.
+
+   Exemplo:
+   - Quero assistir
+   - Já assisti
+   - Ver histórico
+========================================================== */
+
+.movie-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-width: 170px;
+
+  padding: 10px 14px;
+
+  border: none;
+  outline: none;
+
+  border-radius: 10px;
+
+  background-color: #1f1f1f;
+
+  color: #fff;
+  font: inherit;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+/* hover botão */
+.movie-action-button:hover {
+  background-color: #2a2a2a;
+}
+
+/* ==========================================================
+   WANT TO WATCH
+========================================================== */
+
+.want-to-watch.active {
+  background-color: rgba(220, 38, 38, 0.20);
+  color: #ff6b6b;
+}
+
+/* ==========================================================
+   WATCHED
+========================================================== */
+
+.watched.active {
+  background-color: rgba(22, 163, 74, 0.20);
+  color: #4ade80;
+}
+
+/* ==========================================================
+   HISTORY BUTTON
+========================================================== */
+
+.history-button {
+  min-width: 280px;
+  margin-top: 1px;
+}
